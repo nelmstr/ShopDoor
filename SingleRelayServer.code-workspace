@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../SingleRelayServer"
+		},
+		{
+			"name": "ShopDoor",
+			"path": "."
+		}
+	],
+	"settings": {}
+}
