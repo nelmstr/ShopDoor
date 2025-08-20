@@ -14,8 +14,8 @@
 #define SENSOR2_PIN    14  // Magnetic reed sensor 2
 
 // ----------- Wi-Fi Credentials -----------
-const char* ssid = "1224";
-const char* password = "OrIon$@42";
+const char* ssid = "";
+const char* password = "";
 
 // ----------- Globals -----------
 AsyncWebServer server(80);
