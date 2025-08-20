@@ -28,6 +28,9 @@ bool closeRelayActive = false;
 unsigned long openRelayTimer = 0;
 unsigned long closeRelayTimer = 0;
 
+// Duration to hold the close relay (in milliseconds)
+const unsigned long closeTime = 3*1000; // Adjust as needed for your door
+
 // Function to get door state as a string
 String getDoorState() {
   if (digitalRead(SENSOR1_PIN) == LOW) return "Closed";   // S1 closed = door closed
@@ -155,7 +158,7 @@ void loop() {
     digitalWrite(OPEN_RELAY, HIGH); // Release relay
     openRelayActive = false;
   }
-  if (closeRelayActive && millis() - closeRelayTimer > 30000) {
+  if (closeRelayActive && millis() - closeRelayTimer > closeTime) {
     digitalWrite(CLOSE_RELAY, HIGH); // Release relay
     closeRelayActive = false;
   }
