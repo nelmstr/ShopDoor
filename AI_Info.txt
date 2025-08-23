@@ -1,0 +1,24 @@
+https://www.perplexity.ai/search/i-need-a-program-for-an-esp32-UV3Sym6qRJOSftJOpXSt9Q
+
+// PROMPT
+I need a program for an esp32
+It will operate three relays, have three buttons, and have two magnetic reed sensors. It will show button operation and door position from sensor state.
+Open button operation:
+- This button is a capacitive touch sensor connected to pin 4 and a button on a web page
+- Opens a garage door with a relay that is connected to pin 32. This relay will only close for 250 ms.
+- Operates when sensor 2 is open.
+Close button operation:
+- This button is a capacitive button connected to pin 2 and a button on a web page
+- Closes the garage door with a relay that is connected to pin 33. This relay will close for 30 seconds.
+- Operates when sensor 1 is open
+Button 3 operation:
+- This button is a capacitive button connected to pin 15 and a button on a web page
+- Stops garage door operation with a relay that is connected to pin 25 and opening the relay on pin 33
+When the program starts it attempts to determine if the door is closed by sensing if sensor 1 is open.
+When sensor 1 is closed the web page will show the door as closed
+when sensor 2 is closed the web page will show the door as open.
+IMPORTANT:  The stop buttons on the web page and touch sensors MUST stop the door by opening the open and close relays immediately
+
+esp32-A5A120
+3C-8A-1F-A5-A1-20
+192.168.0.196
