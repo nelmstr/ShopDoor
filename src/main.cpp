@@ -2,9 +2,9 @@
 #include <ESPAsyncWebServer.h>
 
 // ----------- Pin Definitions -----------
-#define OPEN_TOUCH     4   // Touch pin for open
-#define CLOSE_TOUCH    2   // Touch pin for close
-#define STOP_TOUCH     15  // Touch pin for stop
+#define TOUCH_OPEN     4    // Capacitive touch sensor (open - BROWN)
+#define TOUCH_CLOSE    2    // Capacitive touch sensor (close - RED)
+#define TOUCH_STOP     15   // Capacitive touch sensor (stop - BLACK)
 
 #define OPEN_RELAY     32  // Relay to open door (pulse)
 #define CLOSE_RELAY    33  // Relay to close door (hold)
@@ -14,8 +14,8 @@
 #define SENSOR2_PIN    14  // Magnetic reed sensor 2
 
 // ----------- Wi-Fi Credentials -----------
-const char* ssid = "";
-const char* password = "";
+const char* ssid = "1227";
+const char* password = "OrIon$@42";
 
 // ----------- Globals -----------
 AsyncWebServer server(80);
@@ -29,7 +29,8 @@ unsigned long openRelayTimer = 0;
 unsigned long closeRelayTimer = 0;
 
 // Duration to hold the close relay (in milliseconds)
-const unsigned long closeTime = 3*1000; // Adjust as needed for your door
+const unsigned long closeTime = 15*1000; // Adjust as needed for your door
+const unsigned long buttonTime = 250; // Open relay pulse duration
 
 // Function to get door state as a string
 String getDoorState() {
@@ -41,32 +42,32 @@ String getDoorState() {
 // Helper: Open Door (only if S2 open)
 void openDoor() {
   if (digitalRead(SENSOR2_PIN) == HIGH && !openRelayActive) {
-    digitalWrite(OPEN_RELAY, LOW);
+    digitalWrite(OPEN_RELAY, HIGH);
     openRelayActive = true;
     openRelayTimer = millis();
-    digitalWrite(STOP_RELAY, HIGH); // Ensure stop released
+    digitalWrite(STOP_RELAY, LOW); // Ensure stop released
   }
 }
 
 // Helper: Close Door (only if S1 open)
 void closeDoor() {
   if (digitalRead(SENSOR1_PIN) == HIGH && !closeRelayActive) {
-    digitalWrite(CLOSE_RELAY, LOW);
+    digitalWrite(CLOSE_RELAY, HIGH);
     closeRelayActive = true;
     closeRelayTimer = millis();
-    digitalWrite(STOP_RELAY, HIGH);
+    digitalWrite(STOP_RELAY, LOW);
   }
 }
 
 // Helper: Stop Door (IMMEDIATE relay open)
 void stopDoor() {
-  digitalWrite(CLOSE_RELAY, HIGH);  // Open close relay immediately
-  digitalWrite(OPEN_RELAY, HIGH);   // Ensure open relay releases
-  digitalWrite(STOP_RELAY, LOW);    // Activate stop relay
   openRelayActive = false;
   closeRelayActive = false;
-  delay(100);
-  digitalWrite(STOP_RELAY, HIGH);   // Release stop relay
+  digitalWrite(CLOSE_RELAY, LOW);  // Open close relay immediately
+  digitalWrite(OPEN_RELAY, LOW);   // Ensure open relay releases
+  digitalWrite(STOP_RELAY, HIGH);    // Activate stop relay
+  delay(buttonTime);
+  digitalWrite(STOP_RELAY, LOW);   // Release stop relay
 }
 
 // ------------------ HTML Web Page ---------------------
@@ -110,17 +111,23 @@ void setup() {
   Serial.begin(115200);
 
   // Pins
-  pinMode(OPEN_RELAY, OUTPUT); digitalWrite(OPEN_RELAY, HIGH);
-  pinMode(CLOSE_RELAY, OUTPUT); digitalWrite(CLOSE_RELAY, HIGH);
-  pinMode(STOP_RELAY, OUTPUT); digitalWrite(STOP_RELAY, HIGH);
+  pinMode(OPEN_RELAY, OUTPUT); digitalWrite(OPEN_RELAY, LOW);
+  pinMode(CLOSE_RELAY, OUTPUT); digitalWrite(CLOSE_RELAY, LOW);
+  pinMode(STOP_RELAY, OUTPUT); digitalWrite(STOP_RELAY, LOW);
 
   pinMode(SENSOR1_PIN, INPUT_PULLUP);
   pinMode(SENSOR2_PIN, INPUT_PULLUP);
 
+
+
   // Wi-Fi
-  WiFi.mode(WIFI_STA);
+  WiFi.mode(WIFI_STA);  // ap for access point, sta for client
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) delay(500);
+  Serial.println("Connected to WiFi");
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP());
+  Serial.print(WiFi.SSID());
 
   // Web Routes
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){ 
@@ -149,17 +156,17 @@ void setup() {
 // ------------------- MAIN LOOP -------------------
 void loop() {
   // Capacitive buttons (simple threshold: adjust as needed)
-  if (touchRead(OPEN_TOUCH) < 30)   openDoor();
-  if (touchRead(CLOSE_TOUCH) < 30)  closeDoor();
-  if (touchRead(STOP_TOUCH) < 30)   stopDoor();
+  if (touchRead(TOUCH_OPEN) < 30)   openDoor();
+  if (touchRead(TOUCH_CLOSE) < 30)  closeDoor();
+  if (touchRead(TOUCH_STOP) < 30)   stopDoor();
 
   // Timed Relay Control
-  if (openRelayActive && millis() - openRelayTimer > 250) {
-    digitalWrite(OPEN_RELAY, HIGH); // Release relay
+  if (openRelayActive && millis() - openRelayTimer > buttonTime) {
+    digitalWrite(OPEN_RELAY, LOW); // Release relay
     openRelayActive = false;
   }
   if (closeRelayActive && millis() - closeRelayTimer > closeTime) {
-    digitalWrite(CLOSE_RELAY, HIGH); // Release relay
+    digitalWrite(CLOSE_RELAY, LOW); // Release relay
     closeRelayActive = false;
   }
 }
