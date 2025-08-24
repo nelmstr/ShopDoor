@@ -61,11 +61,11 @@ void closeDoor() {
 
 // Helper: Stop Door (IMMEDIATE relay open)
 void stopDoor() {
+  openRelayActive = false;
+  closeRelayActive = false;
   digitalWrite(CLOSE_RELAY, LOW);  // Open close relay immediately
   digitalWrite(OPEN_RELAY, LOW);   // Ensure open relay releases
   digitalWrite(STOP_RELAY, HIGH);    // Activate stop relay
-  openRelayActive = false;
-  closeRelayActive = false;
   delay(buttonTime);
   digitalWrite(STOP_RELAY, LOW);   // Release stop relay
 }
