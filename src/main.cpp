@@ -1,5 +1,6 @@
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
+#include "secrets.h"  // WiFi credentials
 
 // ----------- Pin Definitions -----------
 #define TOUCH_OPEN     4    // Capacitive touch sensor (open - BROWN)
@@ -13,9 +14,6 @@
 #define SENSOR1_PIN    12  // Magnetic reed sensor 1
 #define SENSOR2_PIN    14  // Magnetic reed sensor 2
 
-// ----------- Wi-Fi Credentials -----------
-const char* ssid = "1227";
-const char* password = "changeme";
 
 // ----------- Globals -----------
 AsyncWebServer server(80);
@@ -130,7 +128,7 @@ void setup() {
   // Wi-Fi
   Serial.println("Connecting to WiFi...");
   WiFi.mode(WIFI_STA);  // ap for access point, sta for client
-  WiFi.begin(ssid, password);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.status() != WL_CONNECTED) delay(500);
   Serial.println("Connected to WiFi");
   Serial.println("IP Address: ");
