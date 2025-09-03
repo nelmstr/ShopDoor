@@ -15,7 +15,7 @@
 
 // ----------- Wi-Fi Credentials -----------
 const char* ssid = "1227";
-const char* password = "OrIon$@42";
+const char* password = "changeme";
 
 // ----------- Globals -----------
 AsyncWebServer server(80);
@@ -32,6 +32,10 @@ unsigned long closeRelayTimer = 0;
 const unsigned long closeTime = 15*1000; // Adjust as needed for your door
 const unsigned long buttonTime = 250; // Open relay pulse duration
 
+// WiFi reconnect timer
+unsigned long previousMillis = 0;
+const long interval = 10000; // 20 seconds
+
 // Function to get door state as a string
 String getDoorState() {
   if (digitalRead(SENSOR1_PIN) == LOW) return "Closed";   // S1 closed = door closed
@@ -42,6 +46,7 @@ String getDoorState() {
 // Helper: Open Door (only if S2 open)
 void openDoor() {
   if (digitalRead(SENSOR2_PIN) == HIGH && !openRelayActive) {
+    Serial.println("Opening door...");
     digitalWrite(OPEN_RELAY, HIGH);
     openRelayActive = true;
     openRelayTimer = millis();
@@ -52,6 +57,7 @@ void openDoor() {
 // Helper: Close Door (only if S1 open)
 void closeDoor() {
   if (digitalRead(SENSOR1_PIN) == HIGH && !closeRelayActive) {
+    Serial.println("Closing door...");
     digitalWrite(CLOSE_RELAY, HIGH);
     closeRelayActive = true;
     closeRelayTimer = millis();
@@ -61,6 +67,7 @@ void closeDoor() {
 
 // Helper: Stop Door (IMMEDIATE relay open)
 void stopDoor() {
+  Serial.println("Stopping door...");
   openRelayActive = false;
   closeRelayActive = false;
   digitalWrite(CLOSE_RELAY, LOW);  // Open close relay immediately
@@ -75,7 +82,7 @@ const char webpage[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
 <html>
 <head>
-<title>Garage Controller</title>
+<title>Shop Door Controller</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body { font-family: Arial; text-align: center; }
@@ -85,10 +92,10 @@ button { font-size: 2em; margin: 10px; padding: 20px 40px; }
 </head>
 <body>
 <h1>Garage Door Control</h1>
-<div class="status" id="doorState">Loading...</div>
-<button onclick="sendCmd('open')">Open</button>
-<button onclick="sendCmd('close')">Close</button>
-<button onclick="sendCmd('stop')">Stop</button>
+<div class="status" id="doorState">Loading...</div><br>
+<button onclick="sendCmd('open')">Open</button><br>
+<button onclick="sendCmd('close')">Close</button><br>
+<button onclick="sendCmd('stop')">Stop</button><br>
 <script>
 function sendCmd(cmd) {
   fetch('/api/' + cmd, { method:'POST' });
@@ -121,17 +128,18 @@ void setup() {
 
 
   // Wi-Fi
+  Serial.println("Connecting to WiFi...");
   WiFi.mode(WIFI_STA);  // ap for access point, sta for client
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) delay(500);
   Serial.println("Connected to WiFi");
-  Serial.print("IP Address: ");
+  Serial.println("IP Address: ");
   Serial.println(WiFi.localIP());
-  Serial.print(WiFi.SSID());
+  Serial.println(WiFi.SSID());
 
   // Web Routes
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){ 
-    request->send_P(200, "text/html", webpage); 
+    request->send(200, "text/html", webpage); 
   });
   server.on("/api/open", HTTP_POST, [](AsyncWebServerRequest *request){
     openDoor();
@@ -168,5 +176,14 @@ void loop() {
   if (closeRelayActive && millis() - closeRelayTimer > closeTime) {
     digitalWrite(CLOSE_RELAY, LOW); // Release relay
     closeRelayActive = false;
+  }
+
+    unsigned long currentMillis = millis();
+  if (WiFi.status() != WL_CONNECTED && currentMillis - previousMillis >= interval) {
+    Serial.println("WiFi connection lost. Reconnecting...");
+    ESP.restart();
+    // WiFi.disconnect();
+    // WiFi.reconnect();
+    previousMillis = currentMillis;
   }
 }
