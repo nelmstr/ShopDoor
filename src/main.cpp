@@ -140,6 +140,7 @@ void setup() {
     request->send(200, "text/html", webpage); 
   });
   server.on("/api/open", HTTP_POST, [](AsyncWebServerRequest *request){
+    Serial.println("API Open");
     openDoor();
     request->send(200, "text/plain", "OK");
   });
@@ -162,7 +163,12 @@ void setup() {
 // ------------------- MAIN LOOP -------------------
 void loop() {
   // Capacitive buttons (simple threshold: adjust as needed)
-  if (touchRead(TOUCH_OPEN) < 30)   openDoor();
+    // Serial.println(TOUCH_OPEN);
+  if (touchRead(TOUCH_OPEN) < 50) {
+    Serial.print("Touch Open: ");
+    Serial.println(TOUCH_OPEN);
+    // openDoor();
+  } 
   if (touchRead(TOUCH_CLOSE) < 30)  closeDoor();
   if (touchRead(TOUCH_STOP) < 30)   stopDoor();
 
