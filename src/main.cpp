@@ -37,8 +37,8 @@ const long interval = 10000; // 20 seconds
 // Function to get door state as a string
 String getDoorState() {
   if (digitalRead(SENSOR1_PIN) == LOW) return "Closed";   // S1 closed = door closed
-  if (digitalRead(SENSOR2_PIN) == LOW) return "Open";     // S2 closed = door open
-  return "Moving";
+  // if (digitalRead(SENSOR2_PIN) == LOW) return "Open";     // S2 closed = door open
+  return "Moving/Open";
 }
 
 // Helper: Open Door (only if S2 open)
