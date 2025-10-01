@@ -164,11 +164,11 @@ void setup() {
 void loop() {
   // Capacitive buttons (simple threshold: adjust as needed)
     // Serial.println(TOUCH_OPEN);
-  if (touchRead(TOUCH_OPEN) < 50) {
-    Serial.print("Touch Open: ");
-    Serial.println(TOUCH_OPEN);
-    // openDoor();
-  } 
+  // if (touchRead(TOUCH_OPEN) < 50) {
+  //   Serial.print("Touch Open: ");
+  //   Serial.println(TOUCH_OPEN);
+  //   // openDoor();
+  // } 
   if (touchRead(TOUCH_CLOSE) < 30)  closeDoor();
   if (touchRead(TOUCH_STOP) < 30)   stopDoor();
 
