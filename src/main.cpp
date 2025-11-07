@@ -1,6 +1,7 @@
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
 #include "secrets.h"  // WiFi credentials
+#include <HTTPClient.h> // Send alerts to ntfy service
 
 // ----------- Pin Definitions -----------
 #define TOUCH_OPEN     4    // Capacitive touch sensor (open - BROWN)
@@ -30,9 +31,31 @@ unsigned long closeRelayTimer = 0;
 const unsigned long closeTime = 15*1000; // Adjust as needed for your door
 const unsigned long buttonTime = 250; // Open relay pulse duration
 
+// Time to check how long the door has been open before sending alert
+const unsigned long doorOpenAlertTime = 30*60*1000; // 30 minutes
+
 // WiFi reconnect timer
 unsigned long previousMillis = 0;
 const long interval = 10000; // 20 seconds
+
+// Function to send alert via ntfy service
+void sendAlert(const String& message) {
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    http.begin(NTFY_SERVER); // Replace with your ntfy topic or define in secrets.h
+    http.addHeader("Title", "Garage Door Alert");
+    int httpResponseCode = http.POST(message);
+    if (httpResponseCode > 0) {
+      Serial.println("Alert sent successfully");
+    } else {
+      Serial.print("Error sending alert: ");
+      Serial.println(httpResponseCode);
+    }
+    http.end();
+  } else {
+    Serial.println("WiFi not connected. Cannot send alert.");
+  }
+}
 
 // Function to get door state as a string
 String getDoorState() {
@@ -189,5 +212,16 @@ void loop() {
     // WiFi.disconnect();
     // WiFi.reconnect();
     previousMillis = currentMillis;
+  }
+
+  // Door Open Alert
+  if (digitalRead(SENSOR1_PIN) == HIGH) { // Door is not closed
+    if (!doorIsClosed) {
+      static unsigned long doorOpenTimer = millis();
+      if (millis() - doorOpenTimer > doorOpenAlertTime) {
+        sendAlert("Alert: Garage door has been open for over 30 minutes!");
+        doorIsClosed = true; // Prevent multiple alerts
+      }
+    }
   }
 }
