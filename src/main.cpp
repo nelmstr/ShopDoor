@@ -72,6 +72,7 @@ void openDoor() {
     openRelayActive = true;
     openRelayTimer = millis();
     digitalWrite(STOP_RELAY, LOW); // Ensure stop released
+    sendAlert("Info: Shop door is opening.");
   }
 }
 
@@ -165,15 +166,15 @@ void setup() {
   server.on("/api/open", HTTP_POST, [](AsyncWebServerRequest *request){
     Serial.println("API Open");
     openDoor();
-    request->send(200, "text/plain", "OK");
+    request->send(200, "text/plain", "Opening Door");
   });
   server.on("/api/close", HTTP_POST, [](AsyncWebServerRequest *request){
     closeDoor();
-    request->send(200, "text/plain", "OK");
+    request->send(200, "text/plain", "Closing Door");
   });
   server.on("/api/stop", HTTP_POST, [](AsyncWebServerRequest *request){
     stopDoor();
-    request->send(200, "text/plain", "OK");
+    request->send(200, "text/plain", "Door Stopped");
   });
   server.on("/api/state", HTTP_GET, [](AsyncWebServerRequest *request){
     String json = "{\"state\":\"" + getDoorState() + "\"}";
