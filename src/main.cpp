@@ -84,6 +84,7 @@ void closeDoor() {
     closeRelayActive = true;
     closeRelayTimer = millis();
     digitalWrite(STOP_RELAY, LOW);
+    sendAlert("Info: Shop door is closing.");
   }
 }
 
@@ -97,6 +98,7 @@ void stopDoor() {
   digitalWrite(STOP_RELAY, HIGH);    // Activate stop relay
   delay(buttonTime);
   digitalWrite(STOP_RELAY, LOW);   // Release stop relay
+  sendAlert("Info: Shop door is stopped.");
 }
 
 // ------------------ HTML Web Page ---------------------
