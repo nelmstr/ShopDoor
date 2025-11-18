@@ -4,13 +4,14 @@
 #include <HTTPClient.h> // Send alerts to ntfy service
 
 // ----------- Pin Definitions -----------
-#define TOUCH_OPEN     4    // Capacitive touch sensor (open - BROWN)
+#define TOUCH_OPEN     4    // Capacitive touch sensor (open - ORANGE)
 #define TOUCH_CLOSE    2    // Capacitive touch sensor (close - RED)
 #define TOUCH_STOP     15   // Capacitive touch sensor (stop - BLACK)
 
-#define OPEN_RELAY     32  // Relay to open door (pulse)
-#define CLOSE_RELAY    33  // Relay to close door (hold)
-#define STOP_RELAY     25  // Relay to stop door
+#define OPEN_RELAY     32  // Relay to open door (pulse) - relay 1
+#define CLOSE_RELAY    33  // Relay to close door (hold) - relay 2
+#define STOP_RELAY     25  // Relay to stop door - relay 3
+#define LIGHT_RELAY    26  // Relay to control light (not used) - relay 4
 
 #define SENSOR1_PIN    12  // Magnetic reed sensor 1
 #define SENSOR2_PIN    14  // Magnetic reed sensor 2
@@ -40,7 +41,8 @@ const long interval = 10000; // 20 seconds
 
 // Function to send alert via ntfy service
 void sendAlert(const String& message) {
-  if (WiFi.status() == WL_CONNECTED) {
+  //if (WiFi.status() == WL_CONNECTED) {
+  if (false == true) {
     HTTPClient http;
     http.begin(NTFY_SERVER); // Replace with your ntfy topic or define in secrets.h
     http.addHeader("Title", "Shop Door Alert");
@@ -53,7 +55,7 @@ void sendAlert(const String& message) {
     }
     http.end();
   } else {
-    Serial.println("WiFi not connected. Cannot send alert.");
+    // Serial.println("WiFi not connected. Cannot send alert.");
   }
 }
 
@@ -68,10 +70,12 @@ String getDoorState() {
 void openDoor() {
   if (digitalRead(SENSOR2_PIN) == HIGH && !openRelayActive) {
     Serial.println("Opening door...");
+    closeRelayActive = false;
+    digitalWrite(CLOSE_RELAY, LOW); // Ensure close released
+    digitalWrite(STOP_RELAY, LOW); // Ensure stop released
     digitalWrite(OPEN_RELAY, HIGH);
     openRelayActive = true;
     openRelayTimer = millis();
-    digitalWrite(STOP_RELAY, LOW); // Ensure stop released
     sendAlert("Info: Shop door is opening.");
   }
 }
@@ -189,14 +193,19 @@ void setup() {
 // ------------------- MAIN LOOP -------------------
 void loop() {
   // Capacitive buttons (simple threshold: adjust as needed)
-    // Serial.println(TOUCH_OPEN);
-  // if (touchRead(TOUCH_OPEN) < 50) {
-  //   Serial.print("Touch Open: ");
-  //   Serial.println(TOUCH_OPEN);
-    // openDoor();
-  // } 
-  // if (touchRead(TOUCH_CLOSE) < 30)  closeDoor();
-  // if (touchRead(TOUCH_STOP) < 30)   stopDoor();
+    // Serial.print("Touch Open: ");
+    // Serial.println(touchRead(TOUCH_OPEN));
+    // Serial.print("Touch Close: ");
+    // Serial.println(touchRead(TOUCH_CLOSE));
+    // Serial.print("Touch Stop: ");
+    // Serial.println(touchRead(TOUCH_STOP));
+  if (touchRead(TOUCH_OPEN) > 90) {
+    openDoor();
+  } 
+  if (touchRead(TOUCH_CLOSE) > 90) {
+     closeDoor();
+    }
+  if (touchRead(TOUCH_STOP) > 90)   stopDoor();
 
   // Timed Relay Control
   if (openRelayActive && millis() - openRelayTimer > buttonTime) {
