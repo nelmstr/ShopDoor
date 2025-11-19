@@ -1,15 +1,17 @@
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
 #include "secrets.h"  // WiFi credentials
+#include <HTTPClient.h> // Send alerts to ntfy service
 
 // ----------- Pin Definitions -----------
-#define TOUCH_OPEN     4    // Capacitive touch sensor (open - BROWN)
+#define TOUCH_OPEN     4    // Capacitive touch sensor (open - ORANGE)
 #define TOUCH_CLOSE    2    // Capacitive touch sensor (close - RED)
 #define TOUCH_STOP     15   // Capacitive touch sensor (stop - BLACK)
 
-#define OPEN_RELAY     32  // Relay to open door (pulse)
-#define CLOSE_RELAY    33  // Relay to close door (hold)
-#define STOP_RELAY     25  // Relay to stop door
+#define OPEN_RELAY     32  // Relay to open door (pulse) - relay 1
+#define CLOSE_RELAY    33  // Relay to close door (hold) - relay 2
+#define STOP_RELAY     25  // Relay to stop door - relay 3
+#define LIGHT_RELAY    26  // Relay to control light (not used) - relay 4
 
 #define SENSOR1_PIN    12  // Magnetic reed sensor 1
 #define SENSOR2_PIN    14  // Magnetic reed sensor 2
@@ -30,25 +32,51 @@ unsigned long closeRelayTimer = 0;
 const unsigned long closeTime = 15*1000; // Adjust as needed for your door
 const unsigned long buttonTime = 250; // Open relay pulse duration
 
+// Time to check how long the door has been open before sending alert
+const unsigned long doorOpenAlertTime = 30*60*1000; // 30 minutes
+
 // WiFi reconnect timer
 unsigned long previousMillis = 0;
 const long interval = 10000; // 20 seconds
 
+// Function to send alert via ntfy service
+void sendAlert(const String& message) {
+  //if (WiFi.status() == WL_CONNECTED) {
+  if (false == true) {
+    HTTPClient http;
+    http.begin(NTFY_SERVER); // Replace with your ntfy topic or define in secrets.h
+    http.addHeader("Title", "Shop Door Alert");
+    int httpResponseCode = http.POST(message);
+    if (httpResponseCode > 0) {
+      Serial.println("Alert sent successfully");
+    } else {
+      Serial.print("Error sending alert: ");
+      Serial.println(httpResponseCode);
+    }
+    http.end();
+  } else {
+    // Serial.println("WiFi not connected. Cannot send alert.");
+  }
+}
+
 // Function to get door state as a string
 String getDoorState() {
   if (digitalRead(SENSOR1_PIN) == LOW) return "Closed";   // S1 closed = door closed
-  if (digitalRead(SENSOR2_PIN) == LOW) return "Open";     // S2 closed = door open
-  return "Moving";
+  // if (digitalRead(SENSOR2_PIN) == LOW) return "Open";     // S2 closed = door open
+  return "Moving/Open";
 }
 
 // Helper: Open Door (only if S2 open)
 void openDoor() {
   if (digitalRead(SENSOR2_PIN) == HIGH && !openRelayActive) {
     Serial.println("Opening door...");
+    closeRelayActive = false;
+    digitalWrite(CLOSE_RELAY, LOW); // Ensure close released
+    digitalWrite(STOP_RELAY, LOW); // Ensure stop released
     digitalWrite(OPEN_RELAY, HIGH);
     openRelayActive = true;
     openRelayTimer = millis();
-    digitalWrite(STOP_RELAY, LOW); // Ensure stop released
+    sendAlert("Info: Shop door is opening.");
   }
 }
 
@@ -60,6 +88,7 @@ void closeDoor() {
     closeRelayActive = true;
     closeRelayTimer = millis();
     digitalWrite(STOP_RELAY, LOW);
+    sendAlert("Info: Shop door is closing.");
   }
 }
 
@@ -73,6 +102,7 @@ void stopDoor() {
   digitalWrite(STOP_RELAY, HIGH);    // Activate stop relay
   delay(buttonTime);
   digitalWrite(STOP_RELAY, LOW);   // Release stop relay
+  sendAlert("Info: Shop door is stopped.");
 }
 
 // ------------------ HTML Web Page ---------------------
@@ -140,16 +170,17 @@ void setup() {
     request->send(200, "text/html", webpage); 
   });
   server.on("/api/open", HTTP_POST, [](AsyncWebServerRequest *request){
+    Serial.println("API Open");
     openDoor();
-    request->send(200, "text/plain", "OK");
+    request->send(200, "text/plain", "Opening Door");
   });
   server.on("/api/close", HTTP_POST, [](AsyncWebServerRequest *request){
     closeDoor();
-    request->send(200, "text/plain", "OK");
+    request->send(200, "text/plain", "Closing Door");
   });
   server.on("/api/stop", HTTP_POST, [](AsyncWebServerRequest *request){
     stopDoor();
-    request->send(200, "text/plain", "OK");
+    request->send(200, "text/plain", "Door Stopped");
   });
   server.on("/api/state", HTTP_GET, [](AsyncWebServerRequest *request){
     String json = "{\"state\":\"" + getDoorState() + "\"}";
@@ -162,9 +193,19 @@ void setup() {
 // ------------------- MAIN LOOP -------------------
 void loop() {
   // Capacitive buttons (simple threshold: adjust as needed)
-  if (touchRead(TOUCH_OPEN) < 30)   openDoor();
-  if (touchRead(TOUCH_CLOSE) < 30)  closeDoor();
-  if (touchRead(TOUCH_STOP) < 30)   stopDoor();
+    // Serial.print("Touch Open: ");
+    // Serial.println(touchRead(TOUCH_OPEN));
+    // Serial.print("Touch Close: ");
+    // Serial.println(touchRead(TOUCH_CLOSE));
+    // Serial.print("Touch Stop: ");
+    // Serial.println(touchRead(TOUCH_STOP));
+  if (touchRead(TOUCH_OPEN) > 90) {
+    openDoor();
+  } 
+  if (touchRead(TOUCH_CLOSE) > 90) {
+     closeDoor();
+    }
+  if (touchRead(TOUCH_STOP) > 90)   stopDoor();
 
   // Timed Relay Control
   if (openRelayActive && millis() - openRelayTimer > buttonTime) {
@@ -183,5 +224,16 @@ void loop() {
     // WiFi.disconnect();
     // WiFi.reconnect();
     previousMillis = currentMillis;
+  }
+
+  // Door Open Alert
+  if (digitalRead(SENSOR1_PIN) == HIGH) { // Door is not closed
+    if (!doorIsClosed) {
+      static unsigned long doorOpenTimer = millis();
+      if (millis() - doorOpenTimer > doorOpenAlertTime) {
+        sendAlert("Alert: Garage door has been open for over 30 minutes!");
+        doorIsClosed = true; // Prevent multiple alerts
+      }
+    }
   }
 }
