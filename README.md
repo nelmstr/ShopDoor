@@ -1,6 +1,6 @@
 # ShopDoor
 
-ShopDoor is an ESP32-based garage/shop door controller that exposes a simple web UI and HTTP API for opening, closing, stopping the door, and controlling a light connected to the fourth relay.
+ShopDoor is an ESP32-based garage/shop door controller that exposes a simple web UI and HTTP API for opening, closing, stopping the door, and controlling a light connected to the fourth relay. This controller as coded is intended to work with a triple-pole, double-throw switch intended for large shop doors. (See below for diagrams.)
 
 ## Features
 - Control door with capacitive touch sensors or web UI
@@ -74,6 +74,22 @@ Below are the board pinout images I took and included in this repo (files live i
 ![Pinout diagram](readme_images/pinout.png)
 
 ![Pin description](<readme_images/pin description.png>)
+
+![3-Button Station](<readme_images/3-button station.png>)
+
+![3-Button Wiring](<readme_images/3-button wiring.png>)
+
+### Stop Function
+To maintain original function, the power from the control circuit must go through the normally closed relay first, then through the stop button.  This stops power through the circuit stopping the door as usual through both the relay and the button. 
+
+### Open Function
+When the open relay is activated it goes from an open to closed position.  Since the power going through the relay is the same as what happens when pressing the power button on the control station, the door opens.
+
+### Close Function
+When the "close" relay is activated it goes from an open to closed position.  This sends the signal to the door opener the same as pressing the close button.
+
+### Light Function
+Activating this closes the fourth relay which has no effect on the door, but is instead intended for a light control.  I have a 12v power supply and some LED strip lights connected through mine.
 
 ## Notes and recommendations
 - `lightOn` state is held in RAM and is not persisted across reboot. If you want persistence, we can add `Preferences` or EEPROM storage to save and restore the light state on boot.
