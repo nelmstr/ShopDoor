@@ -23,6 +23,7 @@ AsyncWebServer server(80);
 bool doorIsClosed = false;
 bool openRelayActive = false;
 bool closeRelayActive = false;
+bool lightOn = false;
 
 // ----------- Relay operation timers -----------
 unsigned long openRelayTimer = 0;
@@ -121,9 +122,11 @@ button { font-size: 2em; margin: 10px; padding: 20px 40px; }
 <body>
 <h1>Garage Door Control</h1>
 <div class="status" id="doorState">Loading...</div><br>
+<div class="status" id="lightState">Light: Loading...</div><br>
 <button onclick="sendCmd('open')">Open</button><br>
 <button onclick="sendCmd('close')">Close</button><br>
 <button onclick="sendCmd('stop')">Stop</button><br>
+<button id="lightBtn" onclick="sendCmd('light')">Toggle Light</button><br>
 <script>
 function sendCmd(cmd) {
   fetch('/api/' + cmd, { method:'POST' });
@@ -131,6 +134,16 @@ function sendCmd(cmd) {
 function updateState() {
   fetch('/api/state').then(x => x.json()).then(json => {
     document.getElementById('doorState').innerText = json.state;
+    // update light state
+    var lightEl = document.getElementById('lightState');
+    var lightBtn = document.getElementById('lightBtn');
+    if (json.light) {
+      lightEl.innerText = 'Light: ON';
+      if (lightBtn) lightBtn.innerText = 'Turn Light OFF';
+    } else {
+      lightEl.innerText = 'Light: OFF';
+      if (lightBtn) lightBtn.innerText = 'Turn Light ON';
+    }
   });
 }
 setInterval(updateState, 1000);
@@ -149,6 +162,7 @@ void setup() {
   pinMode(OPEN_RELAY, OUTPUT); digitalWrite(OPEN_RELAY, LOW);
   pinMode(CLOSE_RELAY, OUTPUT); digitalWrite(CLOSE_RELAY, LOW);
   pinMode(STOP_RELAY, OUTPUT); digitalWrite(STOP_RELAY, LOW);
+  pinMode(LIGHT_RELAY, OUTPUT); digitalWrite(LIGHT_RELAY, LOW);
 
   pinMode(SENSOR1_PIN, INPUT_PULLUP);
   pinMode(SENSOR2_PIN, INPUT_PULLUP);
@@ -182,8 +196,14 @@ void setup() {
     stopDoor();
     request->send(200, "text/plain", "Door Stopped");
   });
+  server.on("/api/light", HTTP_POST, [](AsyncWebServerRequest *request){
+    // Toggle light state
+    lightOn = !lightOn;
+    digitalWrite(LIGHT_RELAY, lightOn ? HIGH : LOW);
+    request->send(200, "text/plain", lightOn ? "Light On" : "Light Off");
+  });
   server.on("/api/state", HTTP_GET, [](AsyncWebServerRequest *request){
-    String json = "{\"state\":\"" + getDoorState() + "\"}";
+    String json = "{\"state\":\"" + getDoorState() + "\",\"light\":" + (lightOn ? "true" : "false") + "}";
     request->send(200, "application/json", json);
   });
 
