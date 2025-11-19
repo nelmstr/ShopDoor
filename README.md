@@ -76,7 +76,7 @@ Below are the board pinout images I took and included in this repo (files live i
 
 ![Pin description](<readme_images/pin description.png>)
 
-![3-Button Station|200x200,50%](<readme_images/3-button station.png>)
+![3-Button Station|200x200,50%](<readme_images/3-button station-50.png>)
 
 ![3-Button Wiring](<readme_images/3-button wiring.png>)
 
