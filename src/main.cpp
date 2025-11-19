@@ -4,10 +4,11 @@
 #include <HTTPClient.h> // Send alerts to ntfy service
 
 // ----------- Pin Definitions -----------
+// the colors only refer to my wiring colors
 #define TOUCH_OPEN     4    // Capacitive touch sensor (open - ORANGE)
 #define TOUCH_CLOSE    2    // Capacitive touch sensor (close - RED)
 #define TOUCH_STOP     15   // Capacitive touch sensor (stop - BLACK)
-#define TOUCH_LIGHT    16   // Capacitive touch sensor (light - YELLOW) - not used
+#define TOUCH_LIGHT    27   // Capacitive touch sensor (light - YELLOW)
 
 #define OPEN_RELAY     32  // Relay to open door (pulse) - relay 1
 #define CLOSE_RELAY    33  // Relay to close door (hold) - relay 2
@@ -112,9 +113,11 @@ void toggleLight() {
   if (lightOn) {
     digitalWrite(LIGHT_RELAY, HIGH);
     Serial.println("Light turned ON");
+    delay(1000);
   } else {
     digitalWrite(LIGHT_RELAY, LOW);
     Serial.println("Light turned OFF");
+    delay(1000);
   }
 } 
 
@@ -236,6 +239,7 @@ void loop() {
      closeDoor();
     }
   if (touchRead(TOUCH_STOP) > 90)   stopDoor();
+  if (touchRead(TOUCH_LIGHT) > 90)  toggleLight();
 
   // Timed Relay Control
   if (openRelayActive && millis() - openRelayTimer > buttonTime) {
