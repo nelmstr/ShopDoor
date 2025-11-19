@@ -1,4 +1,4 @@
-# ShopDoor
+# ShopDoor Controller
 
 ShopDoor is an ESP32-based garage/shop door controller that exposes a simple web UI and HTTP API for opening, closing, stopping the door, and controlling a light connected to the fourth relay. This controller as coded is intended to work with a triple-pole, double-throw switch intended for large shop doors. (See below for diagrams.)
 
