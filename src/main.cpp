@@ -7,6 +7,7 @@
 #define TOUCH_OPEN     4    // Capacitive touch sensor (open - ORANGE)
 #define TOUCH_CLOSE    2    // Capacitive touch sensor (close - RED)
 #define TOUCH_STOP     15   // Capacitive touch sensor (stop - BLACK)
+#define TOUCH_LIGHT    16   // Capacitive touch sensor (light - YELLOW) - not used
 
 #define OPEN_RELAY     32  // Relay to open door (pulse) - relay 1
 #define CLOSE_RELAY    33  // Relay to close door (hold) - relay 2
@@ -106,6 +107,17 @@ void stopDoor() {
   sendAlert("Info: Shop door is stopped.");
 }
 
+void toggleLight() {
+  lightOn = !lightOn;
+  if (lightOn) {
+    digitalWrite(LIGHT_RELAY, HIGH);
+    Serial.println("Light turned ON");
+  } else {
+    digitalWrite(LIGHT_RELAY, LOW);
+    Serial.println("Light turned OFF");
+  }
+} 
+
 // ------------------ HTML Web Page ---------------------
 const char webpage[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
@@ -197,10 +209,8 @@ void setup() {
     request->send(200, "text/plain", "Door Stopped");
   });
   server.on("/api/light", HTTP_POST, [](AsyncWebServerRequest *request){
-    // Toggle light state
-    lightOn = !lightOn;
-    digitalWrite(LIGHT_RELAY, lightOn ? HIGH : LOW);
     request->send(200, "text/plain", lightOn ? "Light On" : "Light Off");
+    toggleLight();
   });
   server.on("/api/state", HTTP_GET, [](AsyncWebServerRequest *request){
     String json = "{\"state\":\"" + getDoorState() + "\",\"light\":" + (lightOn ? "true" : "false") + "}";
