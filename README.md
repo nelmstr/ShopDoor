@@ -1,4 +1,4 @@
-# ShopDoor
+# ShopDoor Controller
 
 ShopDoor is an ESP32-based garage/shop door controller that exposes a simple web UI and HTTP API for opening, closing, stopping the door, and controlling a light connected to the fourth relay. This controller as coded is intended to work with a triple-pole, double-throw switch intended for large shop doors. (See below for diagrams.)
 
@@ -19,7 +19,7 @@ These pin definitions are in `src/main.cpp` (macros shown):
 - `OPEN_RELAY` — GPIO 32 (relay 1 — open pulse)
 - `CLOSE_RELAY` — GPIO 33 (relay 2 — close hold)
 - `STOP_RELAY` — GPIO 25 (relay 3 — stop)
-- `LIGHT_RELAY` — GPIO 26 (relay 4 — light on/off)
+- `LIGHT_RELAY` — GPIO 27 (relay 4 — light on/off)
 
 - `SENSOR1_PIN` — GPIO 12 (reed/magnetic sensor 1)
 - `SENSOR2_PIN` — GPIO 14 (reed/magnetic sensor 2)
