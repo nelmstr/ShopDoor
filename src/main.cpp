@@ -120,7 +120,7 @@ button { font-size: 2em; margin: 10px; padding: 20px 40px; }
 </style>
 </head>
 <body>
-<h1>Garage Door Control</h1>
+<h1>Shop Door Control</h1>
 <div class="status" id="doorState">Loading...</div><br>
 <div class="status" id="lightState">Light: Loading...</div><br>
 <button onclick="sendCmd('open')">Open</button><br>
