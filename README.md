@@ -14,6 +14,7 @@ These pin definitions are in `src/main.cpp` (macros shown):
 - `TOUCH_OPEN` — GPIO 4 (capacitive touch: open)
 - `TOUCH_CLOSE` — GPIO 2 (capacitive touch: close)
 - `TOUCH_STOP` — GPIO 15 (capacitive touch: stop)
+- `TOUCH_LIGHT` — GPIO 27 (capacitive touch: light)
 
 - `OPEN_RELAY` — GPIO 32 (relay 1 — open pulse)
 - `CLOSE_RELAY` — GPIO 33 (relay 2 — close hold)
