@@ -65,6 +65,16 @@ The web UI polls the device every second to update door and light status.
 
 Note: The `light` field is boolean.
 
+## Device notes
+- The device this program is made for is the ESP32 WiFi 4 Channel Relay Module ESP32-WROOM-32E 4 Channel Development Board AC/DC Power Supply Switch Controller Board for Arduino Smart Home Wireless Control.  I got mine from Amazon, but there are other distributors out there.
+- The distributor includes no pinout in the packaging so I've included it here.
+ 
+Below are the board pinout images I took and included in this repo (files live in `readme_images/`).
+
+![Pinout diagram](readme_images/pinout.png)
+
+![Pin description](<readme_images/pin description.png>)
+
 ## Notes and recommendations
 - `lightOn` state is held in RAM and is not persisted across reboot. If you want persistence, we can add `Preferences` or EEPROM storage to save and restore the light state on boot.
 - The `secrets.h` file in `include/` should not be checked into version control; an example file is provided as `include/example secrets.h`.
