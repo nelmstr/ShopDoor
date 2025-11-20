@@ -48,7 +48,7 @@ void sendAlert(const String& message) {
   // if (false == true) {
     HTTPClient http;
     http.begin(NTFY_SERVER); // Replace with your ntfy topic or define in secrets.h
-    http.addHeader("Title", "Shop Door Alert");
+    http.addHeader("Actions", "http, Open Webpage, https://shopdoor.nelmstr.net/, clear=true");
     int httpResponseCode = http.POST(message);
     if (httpResponseCode > 0) {
       Serial.println("Alert sent successfully");
