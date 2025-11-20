@@ -44,11 +44,11 @@ const long interval = 10000; // 20 seconds
 
 // Function to send alert via ntfy service
 void sendAlert(const String& message) {
-  //if (WiFi.status() == WL_CONNECTED) {
-  if (false == true) {
+  if (WiFi.status() == WL_CONNECTED) {
+  // if (false == true) {
     HTTPClient http;
     http.begin(NTFY_SERVER); // Replace with your ntfy topic or define in secrets.h
-    http.addHeader("Title", "Shop Door Alert");
+    http.addHeader("Title", "Shop Door Alert");    
     int httpResponseCode = http.POST(message);
     if (httpResponseCode > 0) {
       Serial.println("Alert sent successfully");
@@ -58,7 +58,7 @@ void sendAlert(const String& message) {
     }
     http.end();
   } else {
-    // Serial.println("WiFi not connected. Cannot send alert.");
+    Serial.println("WiFi not connected. Cannot send alert.");
   }
 }
 
