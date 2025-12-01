@@ -182,10 +182,9 @@ void setup() {
   pinMode(SENSOR1_PIN, INPUT_PULLUP);
   pinMode(SENSOR2_PIN, INPUT_PULLUP);
 
-
-
   // Wi-Fi
-  Serial.println("Connecting to WiFi...");
+  Serial.print("Connecting to WiFi: ");
+  Serial.println(WIFI_SSID);
   WiFi.mode(WIFI_STA);  // ap for access point, sta for client
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.status() != WL_CONNECTED) delay(500);
@@ -232,14 +231,14 @@ void loop() {
     // Serial.println(touchRead(TOUCH_CLOSE));
     // Serial.print("Touch Stop: ");
     // Serial.println(touchRead(TOUCH_STOP));
-  if (touchRead(TOUCH_OPEN) > 90) {
-    openDoor();
-  } 
-  if (touchRead(TOUCH_CLOSE) > 90) {
-     closeDoor();
-    }
-  if (touchRead(TOUCH_STOP) > 90)   stopDoor();
-  if (touchRead(TOUCH_LIGHT) > 90)  toggleLight();
+  // if (touchRead(TOUCH_OPEN) > 90) {
+  //   openDoor();
+  // } 
+  // if (touchRead(TOUCH_CLOSE) > 90) {
+  //    closeDoor();
+  //   }
+  // if (touchRead(TOUCH_STOP) > 90)   stopDoor();
+  // if (touchRead(TOUCH_LIGHT) > 90)  toggleLight();
 
   // Timed Relay Control
   if (openRelayActive && millis() - openRelayTimer > buttonTime) {
