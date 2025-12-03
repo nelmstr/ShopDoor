@@ -87,7 +87,7 @@ To maintain original function, the power from the control circuit must go throug
 When the open relay is activated it goes from an open to closed position.  Since the power going through the relay is the same as what happens when pressing the power button on the control station, the door opens.
 
 ### Close Function
-When the "close" relay is activated it goes from an open to closed position.  This sends the signal to the door opener the same as pressing the close button.
+When the "close" relay is activated it goes from closed to open position.  This sends the signal to the door opener the same as pressing the close button.
 
 ### Light Function
 Activating this closes the fourth relay which has no effect on the door, but is instead intended for a light control.  I have a 12v power supply and some LED strip lights connected through mine.
