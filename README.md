@@ -97,6 +97,9 @@ Activating this closes the fourth relay which has no effect on the door, but is 
 - The `secrets.h` file in `include/` should not be checked into version control; an example file is provided as `include/example secrets.h`.
 - Adjust `closeTime` and touch thresholds in `src/main.cpp` to match your hardware and door timing.
 
+### Additional Hardware
+I've uploaded brackets to [Thingiverse](https://www.thingiverse.com/thing:7221538) to hold the reed sensors.
+
 ## Troubleshooting
 - If the device doesn't connect to Wi-Fi, check `secrets.h` values and serial output for errors.
 - If `platformio` is not found on your machine, install via pip:
